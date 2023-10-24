@@ -11,9 +11,19 @@ const User = db.collection('users');
 
 router.get('/', async function(req, res, next) {
   try {
-    // const {sortby, limit} = req.params
-    const users = await User.find({}).toArray();
-    res.json(users)
+    const { page = 1, sortBy = "_id", sortMode = "desc", limit, search = ''} = req.query
+    const offset = (page - 1) * limit
+    const params = {}
+
+    if(search){
+     params['$or'] = [ { "name": new RegExp(search, 'i') } , {"phone": new RegExp(search, 'i') } ]
+    }
+
+    const rows = await User.find({}).toArray()
+    const total = rows.length
+    const pages = Math.ceil(total / limit)
+    const users = await User.find(params).sort(sortBy == '_id' ? sortBy == 'name' ? { _id : sortMode == 'desc' ? -1 : 1} : { name : sortMode == 'desc' ? -1 : 1} : { phone : sortMode == 'desc' ? -1 : 1}).limit(Number(limit)).skip(Number(offset)).toArray();
+    res.json({data : users, total, pages, page, limit, offset })
   } catch (err) {
     res.status(500).json({ err })
   }

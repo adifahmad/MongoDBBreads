@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MongodbBread (Browse, Read, Edit, Add, Delete)</title>
+  <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+  <div>
+    <div class="groupTittle">
+      <h1>
+        <center class="title">MongodbBread(Browse, Read, Edit, Add, Delete)</center>
+      </h1>
+    </div>
+    <div class="groupForm">
+      <div class="input-group mb-1">
+        <span class="input-group-text">Show</span>
+        <select id="limitList" class="form-select" aria-label="Default select example" onchange="selectLimit()">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="0">All</option>
+        </select>
+        <span class="input-group-text">Entries</span>&nbsp;
+        <div class="col-sm-9">
+          <input type="text" class="form-control" placeholder="search" id="inputSearch" oninput="searchData()">
+        </div>
+        <button type="button" class="btn btn-outline-secondary" id="inputSearch" onclick="searchData()"><i
+            class="fa-solid fa-magnifying-glass" style="color: #7e838b;"></i></button>
+        <button type="button" class="btn btn-outline-warning" id="resetButton" onclick="resetData()"><i
+            class="fa-solid fa-arrows-rotate" style="color: #ffc800;"></i></button>
+      </div>
+      <table id="users-table" class="table table-striped">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Name <i class="fa-solid fa-sort' %>"></i></a></th>
+            <th>Phone <i class="fa-solid fa-sort' %>"></i></a></th>
+            <th>actions</th>
+          </tr>
+        </thead>
+        <tbody id="users-table-tbody">
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <form id="form-user">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="addModalLabel">User Form</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="name" class="col-form-label">Name:</label>
+                <input type="text" class="form-control" id="name">
+              </div>
+              <div class="mb-3">
+                <label for="phone" class="col-form-label">Phone:</label>
+                <input type="text" class="form-control" id="phone"></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <form id="form-edit-user">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="editModalLabel">User Form</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="name" class="col-form-label">Name:</label>
+                <input type="text" class="form-control" id="updatename">
+              </div>
+              <div class="mb-3">
+                <label for="phone" class="col-form-label">Phone:</label>
+                <input type="text" class="form-control" id="updatephone"></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="deleteModalLabel">Delete Confirmation</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p> Are you sure? </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+            <button type="button" class="btn btn-primary" onclick="deleteData()">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="groupButton">
+      <div class="row">
+        <div class="col-sm-9">
+          <a class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fa-solid fa-plus"
+              style="color: #ffffff;"></i></a>
+        </div>
+        <div class="col-sm-1">
+          <nav aria-label="Page navigation example">
+            <ul class="pagination">
+              <li class="page-item" id="button-pagination">
+
+              </li>
+            </ul>
+          </nav>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/javascripts/bootstrap.min.js"></script>
+  <script>
+
+    let id = null
+    let limit = 5
+    let search = ""
+
+    function readId(_id) {
+      id = _id
+      console.log(`${'id'}`)
+    }
+
+    function searchData() {
+      const name = document.getElementById('updatename').value
+      const phone = document.getElementById('updatephone').value
+      let getSearchdata = document.getElementById('inputSearch').value
+      search = getSearchdata.toString()
+      readData()
+    }
+
+    function resetData() {
+      search = document.getElementById('inputSearch').value = ''
+      readData()
+    }
+
+    function selectLimit() {
+      limit = document.getElementById('limitList').value
+      page = 1
+      readData()
+    }
+
+    const addForm = new bootstrap.Modal('#addModal', {
+      keyboard: false
+    })
+
+    const editForm = new bootstrap.Modal('#editModal', {
+      keyboard: false
+    })
+
+    const deleteForm = new bootstrap.Modal('#deleteModal', {
+      keyboard: false
+    })
+
+    document.getElementById('form-user').addEventListener('submit', function (event) {
+      event.preventDefault()
+      addData()
+    })
+
+    document.getElementById('form-edit-user').addEventListener('submit', function (event) {
+      event.preventDefault()
+      editData()
+    })
+
+    const readData = async (page=1) => {
+      let pageNumber = ""
+      const name = document.getElementById('name').value
+      const phone = document.getElementById('phone').value
+      const response = await fetch(`http://localhost:3000/api/users?search=${search}&page=${page}&limit=${limit}`)
+      const users = await response.json()
+      const offset = users.offset
+      let html = ''
+      users.data.forEach((rows, index) => {
+        html += `
+            <tr>
+                <th scope ="row">${index + offset + 1}</th>
+                <td>${rows.name}</td>
+                <td>${rows.phone}</td>
+                <td>
+                    <button type="button" onclick=getData('${rows._id}') class="btn btn-success" data-bs-toggle="modal" data-bs-target="#editModal"><i class="fa-solid fa-pencil" style="color: #ffffff;"></i></button>
+                    <button type="button" onclick=readId('${rows._id}') class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa-solid fa-trash" style="color: #ffffff;"></i></button>
+                    <a href="/users/${rows._id}/todos" class="btn btn-warning"><i class="fa-solid fa-arrow-right-to-bracket" style="color: #374c72;"></i></a>
+                </td>
+            </tr>
+            `
+      });
+
+      document.getElementById('users-table-tbody').innerHTML = html
+
+      for (let i = 1; i <= users.pages; i++) {
+            pageNumber += `<a class="page-link ${page == i ? ' active' : ''}" id="button-pagination" onclick="changePage(${i})">${i}</a>`
+        }
+        
+      document.getElementById('button-pagination').innerHTML = pageNumber
+    }
+    readData()
+
+    const addData = async () => {
+      const name = document.getElementById('name').value
+      const phone = document.getElementById('phone').value
+      const response = await fetch("http://localhost:3000/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, phone }),
+      });
+
+      const result = await response.json();
+
+      readData()
+      addForm.hide()
+
+    }
+
+    const editData = async () => {
+      const name = document.getElementById('updatename').value
+      const phone = document.getElementById('updatephone').value
+      const response = await fetch(`http://localhost:3000/api/users/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, phone }),
+      });
+
+      const result = await response.json();
+      readData()
+      editForm.hide()
+
+    }
+
+    const getData = async (id) => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/users/${id}`);
+        const { user } = await response.json()
+        console.log('user', user)
+        readId(user._id)
+        const name = document.getElementById('updatename').value = user.name
+        const phone = document.getElementById('updatephone').value = user.phone
+        editForm.show()
+      } catch (err) {
+        console.log(err)
+      }
+    }
+
+    const changePage = async (number) => {
+    readData(number)
+    }
+
+    const deleteData = async () => {
+      const response = await fetch(`http://localhost:3000/api/users/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+      const result = await response.json();
+      readData()
+      deleteForm.hide()
+
+    }
+
+    const changeTodos = async (id) => {
+      const response = await fetch(`http://localhost:3000/api/users/${id}/todos`)
+      const { user } = await response.json()
+    }
+
+
+  </script>
+</body>
+
+</html>

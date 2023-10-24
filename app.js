@@ -40,9 +40,28 @@ main()
     app.use(cookieParser());
     app.use(express.static(path.join(__dirname, 'public')));
 
+    app.use(function (req, res, next) {
+
+      // Website you wish to allow to connect
+      res.setHeader('Access-Control-Allow-Origin', '*');
+  
+      // Request methods you wish to allow
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  
+      // Request headers you wish to allow
+      res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  
+      // Set to true if you need the website to include cookies in the requests sent
+      // to the API (e.g. in case you use sessions)
+      res.setHeader('Access-Control-Allow-Credentials', true);
+  
+      // Pass to next layer of middleware
+      next();
+  });
+
     app.use('/', indexRouter);
-    app.use('/users', usersRouter);
-    app.use('/todos', todosRouter);
+    app.use('/api/users', usersRouter);
+    app.use('/api/todos', todosRouter);
 
 
     app.use(function (req, res, next) {
@@ -61,7 +80,7 @@ main()
     });
 
     var debug = require('debug')('mongodbbread:server');
-var http = require('http');
+    var http = require('http');
 
 /**
  * Get port from environment and store in Express.
