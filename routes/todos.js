@@ -13,37 +13,42 @@ module.exports = function (db) {
 
     router.get('/', async function (req, res, next) {
         try {
-            const { page = 1, sortBy = "", sortMode = "", title, startDate, endDate, complete, limit = 5 } = req.query
+            const { page = 1, sortBy = '_id', sortMode = 'desc', title, executor, startDate, endDate, complete, limit = 5 } = req.query
             const offset = (page - 1) * limit
             const params = {}
-            const executor = req.params.id
-
+            const sort = {}
+            sort[sortBy] = sortMode
+            
             if (title) {
                 params['title'] = new RegExp(title, 'i')
             }
 
             if (startDate && endDate) {
-                params['deadline'] = {deadline: {
-                    $gte: new Date(startDate),
-                    $lte: new Date(endDate)
-                }}
+                params['deadline'] = {
+                    $gte: startDate,
+                    $lte: endDate
+                }
             } else if (startDate) {
                 console.log('jalan', startDate)
-                params['deadline'] =  {$gte: new Date(startDate)}
+                params['deadline'] =  {$gte: startDate}
             } else if (endDate) {
-                params['deadline'] = {$lte: new Date(endDate)}
+                params['deadline'] = {$lte: endDate}
             }
 
             if(complete){
                 params['complete'] = JSON.parse(complete)
             }
-
+            if(executor){
+                params['executor'] = new ObjectId(executor)
+            }
+            console.log(sort)
             const rows = await Todo.find({}).toArray();
             const total = rows.length
             const pages = Math.ceil(total / limit)
-            const todos = await Todo.find(params).sort(sortBy == '_id' ? sortBy == 'title' ? { _id: sortMode == 'desc' ? -1 : 1 } : { title: sortMode == 'desc' ? -1 : 1 } : { complete: sortMode == 'desc' ? -1 : 1 }).skip(Number(offset)).limit(Number(limit)).toArray();
+            const todos = await Todo.find(params).sort(sort).skip(Number(offset)).limit(Number(limit)).toArray();
             res.json({ data: todos, total, pages, page, limit, offset, executor, moment })
         } catch (err) {
+            console.log(err)
             res.status(500).json({ err })
         }
     });

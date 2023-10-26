@@ -20,7 +20,7 @@
     <div class="groupForm">
       <div class="input-group mb-1">
         <span class="input-group-text">Show</span>
-        <select id="limitList" class="form-select" aria-label="Default select example" onchange="selectLimit()">
+        <select type="text" id="limitList" class="form-control" aria-label="Default select example" onchange="selectLimit()">
           <option value="5">5</option>
           <option value="10">10</option>
           <option value="0">All</option>
@@ -38,8 +38,16 @@
         <thead>
           <tr>
             <th>No.</th>
-            <th>Name <i class="fa-solid fa-sort' %>"></i></a></th>
-            <th>Phone <i class="fa-solid fa-sort' %>"></i></a></th>
+            <th id="btn-name">Name <a type="button" class="btn p-0" onclick="sortNameAsc('name')">
+              <div class="d-inline-block position-relative" style="height: 10px;">
+                <i class="fa-solid fa-caret-up position-absolute bottom-0 start-0 p-0"></i>
+                <i class="fa-solid fa-caret-down position-absolute top-0 start-0 p-0"></i>
+              </div></a></th>
+            <th id="btn-phone">Phone <a type="button" class="btn p-0" onclick="sortPhoneAsc('phone')">
+              <div class="d-inline-block position-relative" style="height: 10px;">
+                <i class="fa-solid fa-caret-up position-absolute bottom-0 start-0 p-0"></i>
+                <i class="fa-solid fa-caret-down position-absolute top-0 start-0 p-0"></i>
+              </div></a></th>
             <th>actions</th>
           </tr>
         </thead>
@@ -127,7 +135,7 @@
           <a class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fa-solid fa-plus"
               style="color: #ffffff;"></i></a>
         </div>
-        <div class="col-sm-1">
+        <div class="col-sm-2">
           <nav aria-label="Page navigation example">
             <ul class="pagination">
               <li class="page-item" id="button-pagination">
@@ -146,6 +154,7 @@
     let id = null
     let limit = 5
     let search = ""
+    let sortBy = '_id', sortMode = 'desc'
 
     function readId(_id) {
       id = _id
@@ -171,6 +180,66 @@
       readData()
     }
 
+  const sortPhoneAsc = (phone) => {
+    sortBy = phone
+    sortMode = 'asc'
+    let sortasc = `
+    <button type="button" class="btn p-0" onclick="sortPhoneDesc('phone')">
+        <div class="d-inline-block position-relative" style="height: 10px;">
+            <i class="fa-solid fa-caret-up position-absolute bottom-0 start-0 p-0"></i>
+        </div>
+    </button>
+    <span class="ms-3 fw-bold">Phone</span>
+  `
+    document.getElementById(`btn-${phone}`).innerHTML = sortasc
+    readData()
+  }
+
+  const sortPhoneDesc = (phone) => {
+    sortBy = phone
+    sortMode = 'desc'
+    let sortdesc = `
+    <button type="button" class="btn p-0" onclick="sortPhoneAsc('phone')">
+        <div class="d-inline-block position-relative" style="height: 10px;">
+            <i class="fa-solid fa-caret-down position-absolute bottom-0 start-0 p-0"></i>
+        </div>
+    </button>
+    <span class="ms-3 fw-bold">Phone</span>
+  `
+    document.getElementById(`btn-${phone}`).innerHTML = sortdesc
+    readData()
+  }
+
+  const sortNameAsc = (name) => {
+    sortBy = name
+    sortMode = 'asc'
+    let sortasc = `
+    <button type="button" class="btn p-0" onclick="sortNameDesc('name')">
+        <div class="d-inline-block position-relative" style="height: 10px;">
+            <i class="fa-solid fa-caret-up position-absolute bottom-0 start-0 p-0"></i>
+        </div>
+    </button>
+    <span class="ms-3 fw-bold">Name</span>
+  `
+    document.getElementById(`btn-${name}`).innerHTML = sortasc
+    readData()
+  }
+
+  const sortNameDesc = (name) => {
+    sortBy = name
+    sortMode = 'desc'
+    let sortdesc = `
+    <button type="button" class="btn p-0" onclick="sortNameAsc('name')">
+        <div class="d-inline-block position-relative" style="height: 10px;">
+            <i class="fa-solid fa-caret-down position-absolute bottom-0 start-0 p-0"></i>
+        </div>
+    </button>
+    <span class="ms-3 fw-bold">Name</span>
+  `
+    document.getElementById(`btn-${name}`).innerHTML = sortdesc
+    readData()
+  }
+
     const addForm = new bootstrap.Modal('#addModal', {
       keyboard: false
     })
@@ -195,9 +264,10 @@
 
     const readData = async (page=1) => {
       let pageNumber = ""
+      let pagination = ""
       const name = document.getElementById('name').value
       const phone = document.getElementById('phone').value
-      const response = await fetch(`http://localhost:3000/api/users?search=${search}&page=${page}&limit=${limit}`)
+      const response = await fetch(`http://localhost:3000/api/users?search=${search}&page=${page}&limit=${limit}&sortBy=${sortBy}&sortMode=${sortMode}`)
       const users = await response.json()
       const offset = users.offset
       let html = ''
@@ -216,13 +286,25 @@
             `
       });
 
-      document.getElementById('users-table-tbody').innerHTML = html
-
       for (let i = 1; i <= users.pages; i++) {
             pageNumber += `<a class="page-link ${page == i ? ' active' : ''}" id="button-pagination" onclick="changePage(${i})">${i}</a>`
         }
+
+        if (document.getElementById('limitList').value == 0) {
+            pagination = ''
+        }else{
         
-      document.getElementById('button-pagination').innerHTML = pageNumber
+      pagination += `
+      <span>Showing ${users.offset + 1} to ${(Number(limit) + Number(users.offset)) >= Number(users.total) ? Number(users.total) : Number(limit) + Number(users.offset) } of ${users.total} Entries</span>
+      <div class="bpage">
+      ${users.page == 1 ? '' : '<a onclick="changePage(page - 1)" class="page-link" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>'}
+      ${pageNumber}
+      ${users.page == users.pages ? '' : '<a onclick="changePage(page + 1)" class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>'}
+      </div>`
+      }
+      document.getElementById('button-pagination').innerHTML = pagination
+
+      document.getElementById('users-table-tbody').innerHTML = html
     }
     readData()
 
@@ -276,7 +358,8 @@
     }
 
     const changePage = async (number) => {
-    readData(number)
+    page = number
+    readData(page)
     }
 
     const deleteData = async () => {

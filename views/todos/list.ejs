@@ -22,9 +22,9 @@
     </div>
     <div class="groupForm">
       <div class="row mb-3">
-        <label for="inputtitle" class="col-sm-2 col-form-label">Tittle</label>
+        <label for="inputtitle" class="col-sm-2 col-form-label"> Tittle </label>
         <div class="col-sm-10">
-          <input type="text" name="title" class="form-control" id="inputtitle" placeholder="Insert your title">
+          <input type="text" name="title" class="form-control" id="inputtitle" placeholder="Insert your title" oninput="searchData()">
         </div>
       </div>
       <div class="row mb-3">
@@ -32,10 +32,10 @@
         <div class="col-sm-10">
           <div class="row g-3">
             <div class="col">
-              <input type="date" name="startdate" class="form-control">
+              <input type="datetime-local" name="startdate" class="form-control" id="inputstartdate">
             </div>
             <div class="col">
-              <input type="date" name="enddate" class="form-control">
+              <input type="datetime-local" name="enddate" class="form-control" id="inputenddate">
             </div>
           </div>
         </div>
@@ -43,7 +43,7 @@
       <div class="row mb-3">
         <label for="complete" class="col-sm-2 col-form-label"> Complete </label>
         <div class="col-sm-10">
-          <select type="text" name="complete" class="form-control">
+          <select type="text" name="complete" class="form-control" id="selectcomplete">
             <option disabled selected>-select complete-</option>
             <option value="true">Done</option>
             <option value="false">Not Yet</option>
@@ -51,11 +51,16 @@
         </div>
       </div>
       <div class="row mb-3">
-        <div class="col-sm-2"><a class="btn btn-success"><i class="fa-solid fa-sort" style="color: #ffffff;"></i> Sort
-            by deadline</a></div>
+        <div class="col-sm-2" id="btn-deadline"><a class="btn btn-success" id="sortDeadline" onclick="sortAscDeadline('deadline')">
+          <div  class="d-inline-block position-relative" style="height: 10px;">
+            <i class="fa-solid fa-caret-up position-absolute bottom-0 start-0 p-0"
+                style="color: #ffffff;"></i>
+            <i class="fa-solid fa-caret-down position-absolute top-0 start-0 p-0"
+                style="color: #ffffff;"></i>
+        </div> <span class="ms-3 fw-bold"> Sort by deadline </span></a></div>
         <div class="col-sm-10">
-          <a class="btn btn-warning"><i class="fa-solid fa-arrows-rotate"></i></a>
-          <button type="submit" class="btn btn-info"><i class="fa-solid fa-magnifying-glass"></i></button>
+          <a class="btn btn-warning"><i class="fa-solid fa-arrows-rotate" onclick="resetData()"></i></a>
+          <button type="button" class="btn btn-info"><i class="fa-solid fa-magnifying-glass" onclick="searchData()"></i></button>
         </div>
       </div>
     </div>
@@ -70,7 +75,6 @@
         </div>
       </div>
     </div>
-    <hr>
     <div class="groupTable" id="todos-alert">
 
     </div>
@@ -114,33 +118,6 @@
     </div>
   </div>
 
-  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <form id="form-edit-user">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="editModalLabel">User Form</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="title" class="col-form-label">Title:</label>
-              <input type="text" class="form-control" id="updatetitle">
-            </div>
-            <div class="mb-3">
-              <label for="deadline" class="col-form-label">Deadline:</label>
-              <input class="form-control" id="updatedeadline">
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Save Changes</button>
-        </div>
-    </div>
-    </form>
-  </div>
-
   <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -165,11 +142,15 @@
 
 
     let id = null
+    let todoId = null
+    let page = 1
     let title = ""
     let startdate = ""
     let enddate = ""
     let deadline = null
     let complete = ''
+    let sortBy = '_id'
+    let sortMode = 'desc'
     let limit = 5
     let search = ""
     let executor = "<%= executor %>"
@@ -179,19 +160,152 @@
       console.log(`${'id'}`)
     }
 
-    function searchData() {
-      const title = $('#updatetitle').val()
-      const deadline = $('#updatedeadline').val()
-      const complete = $('#updatecomplete').val()
-      let getSearchdata = $('#inputSearch').val()
-      search = getSearchdata.toString()
-      readData()
+    async function searchData() {
+      try{
+      page = 1
+      title = $('#inputtitle').val()
+      startdate = $('#inputstartdate').val()
+      enddate = $('#inputenddate').val()
+      console.log(startdate, enddate)
+      if($('#selectcomplete').val()){
+        complete = $('#selectcomplete').val() 
+      }
+      let pageNumber = ""
+      const response = await fetch(`http://localhost:3000/api/todos?executor=${executor}&title=${title}&startDate=${startdate}&endDate=${enddate}&complete=${complete}&limit=${limit}&sortBy=${sortBy}&sortMode=${sortMode}`)
+      const todos = await response.json()
+      const offset = todos.offset
+      let alert = ''
+      todos.data.forEach((item, index) => {
+        alert += `
+          <div id="item-list ${item._id}" class="item-todos ${item.complete == false && new Date(`${item.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : item.complete == true ? ' alert alert-success' : ' alert alert-secondary' }  role="alert">
+            ${moment(item.deadline).format('DD-MM-YYYY, h:mm:ss a')} ${item.title}
+            <div>
+            <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${item._id}')><i class="fa-solid fa-pencil"></i></a>
+            <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${item._id}')><i class="fa-solid fa-trash"></i></a>
+            </div>
+          </div>
+            `
+      });
+
+      $('#todos-alert').html(alert)
+    }catch(err){
+      console.log(err)
+    }
     }
 
-    function resetData() {
-      search = $('#inputSearch').val()
-      readData()
+    async function resetData() {
+      try{
+      title = ''
+      startdate = ''
+      enddate = ''
+      complete = ''
+      sortBy = '_id'
+      sortMode = 'desc'
+      const response = await fetch(`http://localhost:3000/api/todos?executor=${executor}&title=${title}&startDate=${startdate}&endDate=${enddate}&complete=${complete}&limit=${limit}&sortBy=${sortBy}&sortMode=${sortMode}`)
+      const todos = await response.json()
+      const offset = todos.offset
+      let alert = ''
+      todos.data.forEach((item, index) => {
+        alert += `
+          <div id="item-list${item._id}" class="item-todos ${item.complete == false && new Date(`${item.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : item.complete == true ? ' alert alert-success' : ' alert alert-secondary' }  role="alert">
+            ${moment(item.deadline).format('DD-MM-YYYY, h:mm:ss a')} ${item.title}
+            <div>
+            <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${item._id}')><i class="fa-solid fa-pencil"></i></a>
+            <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${item._id}')><i class="fa-solid fa-trash"></i></a>
+            </div>
+          </div>
+            `
+      });
+
+      $('#todos-alert').html(alert)
+    }catch(err){
+      console.log(err)
     }
+    }
+
+    const sortAscDeadline = async (deadline) => {
+      try {
+        page = 1
+        sortBy = deadline
+        sortMode = 'asc'
+        let sortasc = `
+        <a class="btn btn-success" id="sortDeadline" onclick="sortDescDeadline('deadline')">
+          <div  class="d-inline-block position-relative" style="height: 10px;">
+            <i class="fa-solid fa-caret-up position-absolute bottom-0 start-0 p-0"
+                style="color: #ffffff;"></i>
+            <i class="fa-solid fa-caret-down position-absolute top-0 start-0 p-0"
+                style="color: #ffffff;"></i>
+        </div> <span class="ms-3 fw-bold"> Sort by deadline </span></a>
+  `
+        $(`#btn-${deadline}`).html(sortasc)
+
+      const response = await fetch(`http://localhost:3000/api/todos?executor=${executor}&title=${title}&startDate=${startdate}&endDate=${enddate}&complete=${complete}&limit=${limit}&sortBy=${sortBy}&sortMode=${sortMode}`)
+      const todos = await response.json()
+      const offset = todos.offset
+      let alert = ''
+      todos.data.forEach((item, index) => {
+        alert += `
+          <div id="item-list${item._id}" class="item-todos ${item.complete == false && new Date(`${item.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : item.complete == true ? ' alert alert-success' : ' alert alert-secondary' }" role="alert">
+            ${moment(item.deadline).format('DD-MM-YYYY, h:mm:ss a')} ${item.title}
+            <div>
+            <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${item._id}')><i class="fa-solid fa-pencil"></i></a>
+            <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${item._id}')><i class="fa-solid fa-trash"></i></a>
+            </div>
+          </div>
+            `
+      });
+
+      $('#todos-alert').html(alert)
+
+
+      } catch (err) { console.log(err) }
+    } 
+
+    const sortDescDeadline = async (deadline) => {
+      try {
+        page = 1
+        sortBy = deadline
+        sortMode = 'desc'
+        let sortdesc = `
+        <a class="btn btn-success" id="sortDeadline" onclick="sortAscDeadline('deadline')">
+          <div  class="d-inline-block position-relative" style="height: 10px;">
+            <i class="fa-solid fa-caret-up position-absolute bottom-0 start-0 p-0"
+                style="color: #ffffff;"></i>
+            <i class="fa-solid fa-caret-down position-absolute top-0 start-0 p-0"
+                style="color: #ffffff;"></i>
+        </div> <span class="ms-3 fw-bold"> Sort by deadline </span></a>
+  `
+        $(`#btn-${deadline}`).html(sortdesc)
+
+      const response = await fetch(`http://localhost:3000/api/todos?executor=${executor}&title=${title}&startDate=${startdate}&endDate=${enddate}&complete=${complete}&limit=${limit}&sortBy=${sortBy}&sortMode=${sortMode}`)
+      const todos = await response.json()
+      const offset = todos.offset
+      let alert = ''
+      todos.data.forEach((item, index) => {
+        alert += `
+          <div id="item-list${item._id}" class="item-todos ${item.complete == false && new Date(`${item.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : item.complete == true ? ' alert alert-success' : ' alert alert-secondary' }" role="alert">
+            ${moment(item.deadline).format('DD-MM-YYYY, h:mm:ss a')} ${item.title}
+            <div>
+            <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${item._id}')><i class="fa-solid fa-pencil"></i></a>
+            <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${item._id}')><i class="fa-solid fa-trash"></i></a>
+            </div>
+          </div>
+            `
+      });
+
+      $('#todos-alert').html(alert)
+
+
+      } catch (err) { console.log(err) }
+    }
+
+    $(window).scroll(function() {
+    if($(window).scrollTop() == $(document).height() - $(window).height()) {
+      console.log(page)
+           page += 1
+           readData()
+    }
+    });
 
     const editForm = new bootstrap.Modal('#editModal', {
       keyboard: false
@@ -211,23 +325,26 @@
       editData()
     })
 
-    const readData = async (page = 1) => {
+
+    const readData = async () => {
       let pageNumber = ""
-      const response = await fetch(`http://localhost:3000/api/todos?executor=${executor}&title=${title}&startdate=${startdate}&enddate=${enddate}&complete=${complete}`)
+      const response = await fetch(`http://localhost:3000/api/todos?executor=${executor}&page=${page}&title=${title}&startDate=${startdate}&endDate=${enddate}&complete=${complete}&limit=${limit}&sortBy=${sortBy}&sortMode=${sortMode}`)
       const todos = await response.json()
       const offset = todos.offset
       let alert = ''
       todos.data.forEach((item, index) => {
         alert += `
-          <div ${item.complete == true} ? class="alert alert-success" : class="alert alert-danger" role="alert">
+          <div id="item-list${item._id}" class="item-todos ${item.complete == false && new Date(`${item.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : item.complete == true ? ' alert alert-success' : ' alert alert-secondary' }" role="alert">
             ${moment(item.deadline).format('DD-MM-YYYY, h:mm:ss a')} ${item.title}
+            <div>
             <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${item._id}')><i class="fa-solid fa-pencil"></i></a>
             <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${item._id}')><i class="fa-solid fa-trash"></i></a>
+            </div>
           </div>
             `
       });
 
-      $('#todos-alert').html(alert)
+      $('#todos-alert').append(alert)
 
     }
 
@@ -243,15 +360,24 @@
 
       const result = await response.json();
 
-      readData()
+      $('#todos-alert').prepend(`
+          <div id="item-list${result.insertedId}" class="item-todos ${result.complete == false && new Date(`${result.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : result.complete == true ? ' alert alert-success' : ' alert alert-secondary' }  role="alert">
+            ${moment(result.deadline).format('DD-MM-YYYY, h:mm:ss a')} ${title}
+            <div>
+            <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${result.insertedId}')><i class="fa-solid fa-pencil"></i></a>
+            <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${result.insertedId}')><i class="fa-solid fa-trash"></i></a>
+            </div>
+          </div>
+            `)
+
     }
 
     const editData = async () => {
       const title = $('#updatetitle').val()
       const deadline = $('#updatedeadline').val()
-      const complete = $('#updatecomplete').prop('checked',true)
+      const complete = $('#complete').prop('checked')
       console.log(title, deadline, complete)
-      const response = await fetch(`http://localhost:3000/api/todos/${id}`, {
+      const response = await fetch(`http://localhost:3000/api/todos/${todoId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -260,22 +386,31 @@
       });
 
       const result = await response.json();
-      readData()
+      
+      const change = `
+      ${moment(deadline).format('DD-MM-YYYY, h:mm:ss a')} ${title}
+      <div>
+      <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${todoId}')><i class="fa-solid fa-pencil"></i></a>
+      <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${todoId}')><i class="fa-solid fa-trash"></i></a>
+      </div>
+      `
+  
+      $(`#item-list${todoId}`).attr('class', `${complete == false && new Date(`${deadline}`).getTime() < new Date().getTime() ? 'item-todos  alert alert-danger' : complete == true ? 'item-todos  alert alert-success' : 'item-todos  alert alert-secondary'}`).html(change)
+      
+
       editForm.hide()
 
     }
 
-    const getData = async (id) => {
+    const getData = async (_id) => {
       try {
-        id = id
-        const response = await fetch(`http://localhost:3000/api/todos/${id}`);
-        const { todos } = await response.json()
-        console.log('user', todos)
-        readId(todos._id)
-        
+        const response = await fetch(`http://localhost:3000/api/todos/${_id}`);
+        const {todos} = await response.json()
+        console.log('ini data =>',todos)
+        todoId = _id
         $('#updatetitle').val(todos.title)
         $('#updatedeadline').val(moment(todos.deadline).format('YYYY-MM-DDThh:mm'))
-        $('#updatecomplete').val(todos.complete)
+        $('#complete').prop('checked', todos.complete)
         editForm.show()
       } catch (err) {
         console.log(err)
@@ -294,7 +429,7 @@
         }
       });
       const result = await response.json();
-      readData()
+      $(`#item-list${id}`).remove()
       deleteForm.hide()
     }
 

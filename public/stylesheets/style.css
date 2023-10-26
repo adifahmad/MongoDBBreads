@@ -28,11 +28,13 @@ a {
 }
 
 .groupTable {
-  padding: 5px 5px 5px 5px;
-  border: 2px solid grey(197, 195, 195);
-  flex-direction: row;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  padding: 10px 0px 5px 0px;
+  border: 3px solid #f1f1f1;
+  display: inline-flex;
+  flex-direction: column;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  width: 100%;
 }
 
 /* Add a hover effect for buttons */
@@ -65,6 +67,18 @@ button:hover {
   border: 1px grey(197, 195, 195);
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
+}
+
+.item-todos{
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid black ;
+  border-radius: 5px;
+}
+
+.bpage{
+  display: flex;
+  flex-direction: row;
 }
 
 .row-tab {
