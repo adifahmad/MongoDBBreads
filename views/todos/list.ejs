@@ -364,11 +364,11 @@
       console.log(result)
 
       $('#todos-alert').prepend(`
-          <div id="item-list${result.insertedId}" class="item-todos ${result.complete == false && new Date(`${result.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : result.complete == true ? ' alert alert-success' : ' alert alert-secondary' }  role="alert">
+          <div id="item-list${result._id}" class="item-todos ${result.complete == false && new Date(`${result.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : result.complete == true ? ' alert alert-success' : ' alert alert-secondary' }  role="alert">
             ${moment(result.deadline).format('DD-MM-YYYY, h:mm:ss a')} ${title}
             <div>
-            <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${result.insertedId}')><i class="fa-solid fa-pencil"></i></a>
-            <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${result.insertedId}')><i class="fa-solid fa-trash"></i></a>
+            <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${result._id}')><i class="fa-solid fa-pencil"></i></a>
+            <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${result._id}')><i class="fa-solid fa-trash"></i></a>
             </div>
           </div>
             `)
@@ -406,6 +406,7 @@
 
     const getData = async (_id) => {
       try {
+        console.log(_id)
         const response = await fetch(`http://localhost:3000/api/todos/${_id}`);
         const todos = await response.json()
         console.log('ini data =>',todos)

@@ -53,12 +53,15 @@ module.exports = function (db) {
 
     router.post('/', async function (req, res, next) {
         try {
+            let date = new Date();
+            date.setDate(date.getDate() + 1)
             const { title, executor } = req.body
             const user = await User.findOne({ _id: new ObjectId(executor) })
-            const todos = await Todo.insertOne({ title: title, complete: false, deadline: new Date(), executor: user._id });
-            const find = await todos.findOne({ _id: new ObjectId(todos.insertedId) })
+            const todos = await Todo.insertOne({ title: title, complete: false, deadline: date, executor: user._id });
+            const find = await Todo.findOne({ _id: new ObjectId(todos.insertedId.toString()) })
             res.status(201).json(find)
         } catch (err) {
+            console.log(err)
             res.status(500).json({ err })
         }
     })
@@ -69,6 +72,7 @@ module.exports = function (db) {
             const todos = await Todo.findOne({ _id: new ObjectId(id) });
             res.status(201).json(todos)
         } catch (err) {
+            console.log(err);
             res.status(500).json({ err })
         }
     })
@@ -77,7 +81,7 @@ module.exports = function (db) {
         try {
             const id = req.params.id
             const { title, deadline, complete } = req.body
-            const todos = await Todo.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { title: title, deadline: deadline, complete: JSON.parse(complete) } });
+            const todos = await Todo.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { title: title, deadline: new Date(deadline + "1 day"), complete: JSON.parse(complete) } });
             res.status(201).json(todos)
         } catch (err) {
             console.log(err)
