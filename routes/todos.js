@@ -13,7 +13,7 @@ module.exports = function (db) {
 
     router.get('/', async function (req, res, next) {
         try {
-            const { page = 1, sortBy = '_id', sortMode = 'desc', title, executor, startDate, endDate, complete, limit = 5 } = req.query
+            const { page = 1, sortBy = '_id', sortMode = 'desc', title, executor, startdateDeadline, enddateDeadline, complete, limit = 5 } = req.query
             const offset = (page - 1) * limit
             const params = {}
             const sort = {}
@@ -23,16 +23,15 @@ module.exports = function (db) {
                 params['title'] = new RegExp(title, 'i')
             }
 
-            if (startDate && endDate) {
+            if (startdateDeadline && enddateDeadline) {
                 params['deadline'] = {
-                    $gte: startDate,
-                    $lte: endDate
+                    $gte: startdateDeadline,
+                    $lte: enddateDeadline
                 }
-            } else if (startDate) {
-                console.log('jalan', startDate)
-                params['deadline'] =  {$gte: startDate}
-            } else if (endDate) {
-                params['deadline'] = {$lte: endDate}
+            } else if (startdateDeadline) {
+                params['deadline'] =  {$gte: startdateDeadline}
+            } else if (enddateDeadline) {
+                params['deadline'] = {$lte: enddateDeadline}
             }
 
             if(complete){
@@ -41,12 +40,11 @@ module.exports = function (db) {
             if(executor){
                 params['executor'] = new ObjectId(executor)
             }
-            console.log(sort)
             const rows = await Todo.find({}).toArray();
             const total = rows.length
             const pages = Math.ceil(total / limit)
             const todos = await Todo.find(params).sort(sort).skip(Number(offset)).limit(Number(limit)).toArray();
-            res.json({ data: todos, total, pages, page, limit, offset, executor, moment })
+            res.json({ data: todos, total, pages, page, limit, offset, moment })
         } catch (err) {
             console.log(err)
             res.status(500).json({ err })
@@ -58,7 +56,8 @@ module.exports = function (db) {
             const { title, executor } = req.body
             const user = await User.findOne({ _id: new ObjectId(executor) })
             const todos = await Todo.insertOne({ title: title, complete: false, deadline: new Date(), executor: user._id });
-            res.status(201).json(todos)
+            const find = await todos.findOne({ _id: new ObjectId(todos.insertedId) })
+            res.status(201).json(find)
         } catch (err) {
             res.status(500).json({ err })
         }
@@ -68,7 +67,7 @@ module.exports = function (db) {
         try {
             const id = req.params.id
             const todos = await Todo.findOne({ _id: new ObjectId(id) });
-            res.status(201).json({ todos })
+            res.status(201).json(todos)
         } catch (err) {
             res.status(500).json({ err })
         }
@@ -78,8 +77,7 @@ module.exports = function (db) {
         try {
             const id = req.params.id
             const { title, deadline, complete } = req.body
-            console.log(title, deadline, complete)
-            const todos = await Todo.updateOne({ _id: new ObjectId(id) }, { $set: { title: title, deadline: deadline, complete: JSON.parse(complete) } });
+            const todos = await Todo.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { title: title, deadline: deadline, complete: JSON.parse(complete) } });
             res.status(201).json(todos)
         } catch (err) {
             console.log(err)
@@ -90,7 +88,7 @@ module.exports = function (db) {
     router.delete('/:id', async function (req, res, next) {
         try {
             const id = req.params.id
-            const todos = await Todo.deleteOne({ _id: new ObjectId(id) });
+            const todos = await Todo.findOneAndDelete({ _id: new ObjectId(id) });
             res.status(201).json(todos)
         } catch (err) {
             res.status(500).json({ err })

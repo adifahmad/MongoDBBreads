@@ -59,8 +59,8 @@
                 style="color: #ffffff;"></i>
         </div> <span class="ms-3 fw-bold"> Sort by deadline </span></a></div>
         <div class="col-sm-10">
-          <a class="btn btn-warning"><i class="fa-solid fa-arrows-rotate" onclick="resetData()"></i></a>
-          <button type="button" class="btn btn-info"><i class="fa-solid fa-magnifying-glass" onclick="searchData()"></i></button>
+          <a class="btn btn-warning" onclick="resetData()"><i class="fa-solid fa-arrows-rotate"></i></a>
+          <button type="button" class="btn btn-info" onclick="searchData()"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
       </div>
     </div>
@@ -357,8 +357,11 @@
         },
         body: JSON.stringify({ title, executor }),
       });
+      console.log("jalan =>", title, executor)
 
       const result = await response.json();
+
+      console.log(result)
 
       $('#todos-alert').prepend(`
           <div id="item-list${result.insertedId}" class="item-todos ${result.complete == false && new Date(`${result.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : result.complete == true ? ' alert alert-success' : ' alert alert-secondary' }  role="alert">
@@ -376,7 +379,6 @@
       const title = $('#updatetitle').val()
       const deadline = $('#updatedeadline').val()
       const complete = $('#complete').prop('checked')
-      console.log(title, deadline, complete)
       const response = await fetch(`http://localhost:3000/api/todos/${todoId}`, {
         method: "PUT",
         headers: {
@@ -405,7 +407,7 @@
     const getData = async (_id) => {
       try {
         const response = await fetch(`http://localhost:3000/api/todos/${_id}`);
-        const {todos} = await response.json()
+        const todos = await response.json()
         console.log('ini data =>',todos)
         todoId = _id
         $('#updatetitle').val(todos.title)
@@ -435,7 +437,7 @@
 
     const changeTodos = async (id) => {
       const response = await fetch(`http://localhost:3000/api/users/${id}/todos`)
-      const { user } = await response.json()
+      const user = await response.json()
     }
 
 

@@ -7,11 +7,10 @@ var router = express.Router();
 module.exports = function(db){
 
 const User = db.collection('users');
-// const sort = ""
 
 router.get('/', async function(req, res, next) {
   try {
-    const { page = 1, sortBy = "_id", sortMode = "desc", limit, search = ''} = req.query
+    const { page = 1, sortBy = "_id", sortMode = "desc", limit = 5, search = ''} = req.query
     const offset = (page - 1) * limit
     const params = {}
     const sort = {}
@@ -34,7 +33,8 @@ router.post('/', async function (req, res, next) {
   try {
     const {name, phone} = req.body
     const users = await User.insertOne({ name:name, phone:phone });
-    res.status(201).json(users)
+    const find = await User.findOne({ _id: new ObjectId(users.insertedId) })
+    res.status(201).json(find)
   } catch (err) {
     res.status(500).json({ err })
   }
@@ -44,7 +44,7 @@ router.get('/:id', async function (req, res, next) {
   try {
     const id = req.params.id
     const user = await User.findOne({ _id: new ObjectId(id) });
-    res.status(201).json({user})
+    res.status(201).json(user)
   } catch (err) {
     res.status(500).json({ err })
   }
@@ -54,7 +54,7 @@ router.put('/:id', async function (req, res, next) {
   try {
     const id = req.params.id
     const {name, phone} = req.body
-    const user = await User.updateOne({ _id: new ObjectId(id) }, { $set: { name: name, phone:phone } });
+    const user = await User.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { name: name, phone:phone } });
     res.status(201).json(user)
   } catch (err) {
     res.status(500).json({ err })
@@ -64,7 +64,7 @@ router.put('/:id', async function (req, res, next) {
 router.delete('/:id', async function (req, res, next) {
   try {
     const id = req.params.id
-    const user = await User.deleteOne({ _id: new ObjectId(id) });
+    const user = await User.findOneAndDelete({ _id: new ObjectId(id) });
     res.status(201).json(user)
   } catch (err) {
     res.status(500).json({ err })

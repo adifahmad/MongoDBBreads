@@ -346,7 +346,7 @@
     const getData = async (id) => {
       try {
         const response = await fetch(`http://localhost:3000/api/users/${id}`);
-        const { user } = await response.json()
+        const user = await response.json()
         console.log('user', user)
         readId(user._id)
         const name = document.getElementById('updatename').value = user.name
@@ -377,7 +377,7 @@
 
     const changeTodos = async (id) => {
       const response = await fetch(`http://localhost:3000/api/users/${id}/todos`)
-      const { user } = await response.json()
+      const user = await response.json()
     }
 
 
