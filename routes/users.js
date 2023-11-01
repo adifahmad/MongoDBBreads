@@ -10,13 +10,13 @@ const User = db.collection('users');
 
 router.get('/', async function(req, res, next) {
   try {
-    const { page = 1, sortBy = "_id", sortMode = "desc", limit = 5, search = ''} = req.query
+    const { page = 1, sortBy = "_id", sortMode = "desc", limit = 5, query = ''} = req.query
     const offset = (page - 1) * limit
     const params = {}
     const sort = {}
     sort[sortBy] = sortMode
     if(search){
-     params['$or'] = [ { "name": new RegExp(search, 'i') } , {"phone": new RegExp(search, 'i') } ]
+     params['$or'] = [ { "name": new RegExp(query, 'i') } , {"phone": new RegExp(query, 'i') } ]
     }
 
     const rows = await User.find(params).toArray()
@@ -44,7 +44,7 @@ router.get('/:id', async function (req, res, next) {
   try {
     const id = req.params.id
     const user = await User.findOne({ _id: new ObjectId(id) });
-    res.status(201).json(user)
+    res.status(200).json(user)
   } catch (err) {
     res.status(500).json({ err })
   }
@@ -54,7 +54,8 @@ router.put('/:id', async function (req, res, next) {
   try {
     const id = req.params.id
     const {name, phone} = req.body
-    const user = await User.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { name: name, phone:phone } });
+    const user = await User.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { name: name, phone: phone }}, {returnDocument : 'after'});
+    console.log(user)
     res.status(201).json(user)
   } catch (err) {
     res.status(500).json({ err })

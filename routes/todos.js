@@ -40,7 +40,7 @@ module.exports = function (db) {
             if(executor){
                 params['executor'] = new ObjectId(executor)
             }
-            const rows = await Todo.find({}).toArray();
+            const rows = await Todo.find(params).toArray();
             const total = rows.length
             const pages = Math.ceil(total / limit)
             const todos = await Todo.find(params).sort(sort).skip(Number(offset)).limit(Number(limit)).toArray();
@@ -70,7 +70,7 @@ module.exports = function (db) {
         try {
             const id = req.params.id
             const todos = await Todo.findOne({ _id: new ObjectId(id) });
-            res.status(201).json(todos)
+            res.status(200).json(todos)
         } catch (err) {
             console.log(err);
             res.status(500).json({ err })
@@ -81,7 +81,7 @@ module.exports = function (db) {
         try {
             const id = req.params.id
             const { title, deadline, complete } = req.body
-            const todos = await Todo.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { title: title, deadline: new Date(deadline + "1 day"), complete: JSON.parse(complete) } });
+            const todos = await Todo.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { title: title, deadline: new Date(deadline), complete: JSON.parse(complete) } });
             res.status(201).json(todos)
         } catch (err) {
             console.log(err)
