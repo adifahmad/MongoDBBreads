@@ -15,10 +15,10 @@ router.get('/', async function(req, res, next) {
     const params = {}
     const sort = {}
     sort[sortBy] = sortMode
-    if(search){
+    if(query){
      params['$or'] = [ { "name": new RegExp(query, 'i') } , {"phone": new RegExp(query, 'i') } ]
     }
-
+    console.log(params)
     const rows = await User.find(params).toArray()
     const total = rows.length
     const pages = Math.ceil(total / limit)
