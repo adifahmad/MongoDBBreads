@@ -40,6 +40,8 @@ module.exports = function (db) {
             if(executor){
                 params['executor'] = new ObjectId(executor)
             }
+
+            console.log(params)
             const rows = await Todo.find(params).toArray();
             const total = rows.length
             const pages = Math.ceil(total / limit)
@@ -81,7 +83,9 @@ module.exports = function (db) {
         try {
             const id = req.params.id
             const { title, deadline, complete } = req.body
-            const todos = await Todo.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { title: title, deadline: new Date(deadline), complete: JSON.parse(complete) } });
+            console.log(deadline)
+            const todos = await Todo.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { title: title, deadline: new Date(deadline), complete: JSON.parse(complete) } }, {returnDocument : 'after'});
+            console.log(todos)
             res.status(201).json(todos)
         } catch (err) {
             console.log(err)
