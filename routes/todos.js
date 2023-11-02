@@ -25,13 +25,13 @@ module.exports = function (db) {
 
             if (startdateDeadline && enddateDeadline) {
                 params['deadline'] = {
-                    $gte: startdateDeadline,
-                    $lte: enddateDeadline
+                    $gte: new Date(startdateDeadline),
+                    $lte: new Date(enddateDeadline)
                 }
             } else if (startdateDeadline) {
-                params['deadline'] =  {$gte: startdateDeadline}
+                params['deadline'] =  {$gte: new Date(startdateDeadline)}
             } else if (enddateDeadline) {
-                params['deadline'] = {$lte: enddateDeadline}
+                params['deadline'] = {$lte: new Date(enddateDeadline)}
             }
 
             if(complete){

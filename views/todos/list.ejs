@@ -178,7 +178,7 @@
       todos.data.forEach((item, index) => {
         alert += `
           <div id="item-list ${item._id}" class="item-todos ${item.complete == false && new Date(`${item.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : item.complete == true ? ' alert alert-success' : ' alert alert-secondary' }  role="alert">
-            ${moment(item.deadline).format('DD-MM-YYYY, h:mm:ss')} ${item.title}
+            ${moment(item.deadline).format('DD-MM-YYYY, HH:mm:ss')} ${item.title}
             <div>
             <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${item._id}')><i class="fa-solid fa-pencil"></i></a>
             <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${item._id}')><i class="fa-solid fa-trash"></i></a>
@@ -197,8 +197,8 @@
       try{
       page = 1
       title = ''
-      startdate = ''
-      enddate = ''
+      startdateDeadline = ''
+      enddateDeadline = ''
       complete = ''
       sortBy = '_id'
       sortMode = 'desc'
@@ -209,7 +209,7 @@
       todos.data.forEach((item, index) => {
         alert += `
           <div id="item-list${item._id}" class="item-todos ${item.complete == false && new Date(`${item.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : item.complete == true ? ' alert alert-success' : ' alert alert-secondary' }  role="alert">
-            ${moment(item.deadline).format('DD-MM-YYYY, h:mm:ss')} ${item.title}
+            ${moment(item.deadline).format('DD-MM-YYYY, HH:mm:ss')} ${item.title}
             <div>
             <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${item._id}')><i class="fa-solid fa-pencil"></i></a>
             <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${item._id}')><i class="fa-solid fa-trash"></i></a>
@@ -247,7 +247,7 @@
       todos.data.forEach((item, index) => {
         alert += `
           <div id="item-list${item._id}" class="item-todos ${item.complete == false && new Date(`${item.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : item.complete == true ? ' alert alert-success' : ' alert alert-secondary' }" role="alert">
-            ${moment(item.deadline).format('DD-MM-YYYY, h:mm:ss')} ${item.title}
+            ${moment(item.deadline).format('DD-MM-YYYY, HH:mm:ss')} ${item.title}
             <div>
             <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${item._id}')><i class="fa-solid fa-pencil"></i></a>
             <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${item._id}')><i class="fa-solid fa-trash"></i></a>
@@ -285,7 +285,7 @@
       todos.data.forEach((item, index) => {
         alert += `
           <div id="item-list${item._id}" class="item-todos ${item.complete == false && new Date(`${item.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : item.complete == true ? ' alert alert-success' : ' alert alert-secondary' }" role="alert">
-            ${moment(item.deadline).format('DD-MM-YYYY, h:mm:ss')} ${item.title}
+            ${moment(item.deadline).format('DD-MM-YYYY, HH:mm:ss')} ${item.title}
             <div>
             <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${item._id}')><i class="fa-solid fa-pencil"></i></a>
             <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${item._id}')><i class="fa-solid fa-trash"></i></a>
@@ -336,7 +336,7 @@
       todos.data.forEach((item, index) => {
         alert += `
           <div id="item-list${item._id}" class="item-todos ${item.complete == false && new Date(`${item.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : item.complete == true ? ' alert alert-success' : ' alert alert-secondary' }" role="alert">
-            ${moment(item.deadline).format('DD-MM-YYYY, h:mm:ss')} ${item.title}
+            ${moment(item.deadline).format('DD-MM-YYYY, HH:mm:ss')} ${item.title}
             <div>
             <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${item._id}')><i class="fa-solid fa-pencil"></i></a>
             <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${item._id}')><i class="fa-solid fa-trash"></i></a>
@@ -364,7 +364,7 @@
 
       $('#todos-alert').prepend(`
           <div id="item-list${result._id}" class="item-todos ${result.complete == false && new Date(`${result.deadline}`).getTime() < new Date().getTime() ? ' alert alert-danger' : result.complete == true ? ' alert alert-success' : ' alert alert-secondary' }  role="alert">
-            ${moment(result.deadline).format('DD-MM-YYYY, h:mm:ss')} ${title}
+            ${moment(result.deadline).format('DD-MM-YYYY, HH:mm:ss')} ${title}
             <div>
             <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${result._id}')><i class="fa-solid fa-pencil"></i></a>
             <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${result._id}')><i class="fa-solid fa-trash"></i></a>
@@ -389,7 +389,7 @@
       const result = await response.json();
       
       const change = `
-      ${moment(deadline).format('DD-MM-YYYY, h:mm:ss')} ${title}
+      ${moment(deadline).format('DD-MM-YYYY, HH:mm:ss')} ${title}
       <div>
       <a data-bs-toggle="modal" data-bs-target="#editModal" onclick=getData('${todoId}')><i class="fa-solid fa-pencil"></i></a>
       <a data-bs-toggle="modal" data-bs-target="#deleteModal" onclick=readId('${todoId}')><i class="fa-solid fa-trash"></i></a>
